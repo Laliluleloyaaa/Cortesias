@@ -279,7 +279,8 @@
       if (selectCortesias.value === 'adicional') selectCortesias.value = '1';
     }
 
-    // Low: máximo 2 cortesías por año -> ocultar 3 y 4
+    // Low: máximo 2 cortesías por año -> solo 1 y 2
+    // Medium y High: hasta 4 (Adicional queda exclusivo de High, ya controlado arriba)
     if (nivel === 'low') {
       opcion3.hidden = true; opcion3.disabled = true;
       opcion4.hidden = true; opcion4.disabled = true;
