@@ -32,8 +32,11 @@
 
   .form-group{display:flex;flex-direction:column;gap:8px;margin-bottom:18px}
   label{font-size:.76rem;font-weight:600;letter-spacing:.7px;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:8px}
-  select, input[type=number]{background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:1rem;padding:13px 16px;width:100%;outline:none;transition:border-color .2s}
-  select:focus, input[type=number]:focus{border-color:var(--accent)}
+  select, input[type=number], input[type=date]{background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:1rem;padding:13px 16px;width:100%;outline:none;transition:border-color .2s}
+  select:focus, input[type=number]:focus, input[type=date]:focus{border-color:var(--accent)}
+  input[type=date]::-webkit-calendar-picker-indicator{filter:invert(1);opacity:.7;cursor:pointer}
+  input[type=date]::-webkit-calendar-picker-indicator:hover{opacity:1}
+  input[type=date]:disabled{opacity:.45;cursor:not-allowed}
   .input-wrap{position:relative}
   .input-wrap .cur{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:.95rem;pointer-events:none}
   .input-wrap input{padding-left:38px}
@@ -106,7 +109,7 @@
 
     <div class="form-group">
       <label>Nivel del usuario</label>
-      <select id="nivel">
+      <select id="nivel" onchange="onCambioNivel()">
         <option value="low">Low</option>
         <option value="medium">Medium</option>
         <option value="high">High</option>
@@ -114,19 +117,44 @@
     </div>
 
     <div class="form-group">
-      <label>Cortesías recibidas en el año</label>
+      <label>Número de cortesía a validar</label>
       <select id="cortesias" onchange="actualizarEstado()">
         <option value="1">1</option>
         <option value="2">2</option>
-        <option value="3">3</option>
-        <option value="4">4</option>
-        <option value="adicional">Adicional</option>
+        <option value="3" id="opcion3">3</option>
+        <option value="4" id="opcion4">4</option>
+        <option value="adicional" id="opcionAdicional">Adicional</option>
       </select>
     </div>
 
+    <div class="form-group">
+      <label>Última cortesía recibida</label>
+      <input type="date" id="fechaUltima" onchange="actualizarEstado()">
+      <label style="text-transform:none;font-weight:500;font-size:.82rem;color:var(--text);display:flex;align-items:center;gap:8px;margin-top:2px;letter-spacing:normal">
+        <input type="checkbox" id="nuncaCortesia" onchange="onCambioNunca()" style="width:auto;">
+        Nunca ha recibido cortesía
+      </label>
+    </div>
+
+    <div class="note-box warn" id="notaDepositoReciente" style="display:none"><span class="ic">⚠️</span><div>Nivel <strong>Low</strong>: si el último depósito del cliente fue hace más de <strong>48 horas</strong>, solicita uno nuevo antes de aprobar.</div></div>
+
     <div class="divider"></div>
 
-    <!-- Bloque condicional: solo aparece a partir de la 5ta cortesía -->
+    <div class="note-box" id="notaTiempo"></div>
+
+    <!-- Bloque condicional: reclamo anticipado (Medium/High dentro de la ventana) -->
+    <div class="extra-block" id="anticipadoBlock">
+      <div class="threshold-note" id="umbralAnticipadoTexto"></div>
+      <div class="form-group">
+        <label>Depósito para reclamo anticipado</label>
+        <div class="input-wrap"><span class="cur" id="curAnticipado">$</span><input type="number" id="depositoAnticipado" placeholder="0" oninput="validar()"></div>
+      </div>
+    </div>
+
+    <div class="note-box" id="notaAnticipado"></div>
+
+
+    <!-- Bloque condicional: solo aparece si es Adicional -->
     <div class="extra-block" id="extraBlock">
       <div class="threshold-note" id="umbralesTexto"></div>
 
@@ -163,6 +191,13 @@
     PE: { unico: 400,      acumulado: 1200,    moneda: 'S/' }
   };
 
+  const TIEMPO_NORMAL = { low: 120, medium: 90, high: 60 };
+
+  const ANTICIPADO = {
+    medium: { dias: 60, montos: { CO: 20000,  MX: 100, PE: 20 } },
+    high:   { dias: 30, montos: { CO: 50000,  MX: 200, PE: 50 } }
+  };
+
   let paisActual = 'CO';
 
   function fmt(valor, moneda){
@@ -178,6 +213,7 @@
     document.getElementById('curUnico').textContent = u.moneda;
     document.getElementById('curAcumulado').textContent = u.moneda;
     document.getElementById('curNgr').textContent = u.moneda;
+    document.getElementById('curAnticipado').textContent = u.moneda;
 
     actualizarEstado();
   }
@@ -186,13 +222,98 @@
     return document.getElementById('cortesias').value === 'adicional';
   }
 
+  function esHigh(){
+    return document.getElementById('nivel').value === 'high';
+  }
+
+  function diasDesdeUltima(){
+    if (document.getElementById('nuncaCortesia').checked) return Infinity;
+    const val = document.getElementById('fechaUltima').value;
+    if (!val) return null;
+    const fecha = new Date(val + 'T00:00:00');
+    const hoy = new Date();
+    hoy.setHours(0,0,0,0);
+    return Math.floor((hoy - fecha) / (1000 * 60 * 60 * 24));
+  }
+
+  function calcularEstadoTiempo(){
+    const nivel = document.getElementById('nivel').value;
+    const dias = diasDesdeUltima();
+
+    if (dias === null) return { dias: null, nivel };
+    if (dias === Infinity) return { dias: Infinity, nivel, tiempoOK: true };
+
+    const tiempoNormal = TIEMPO_NORMAL[nivel];
+    if (dias >= tiempoNormal) return { dias, nivel, tiempoOK: true };
+
+    if ((nivel === 'medium' || nivel === 'high') && dias >= ANTICIPADO[nivel].dias) {
+      return { dias, nivel, tiempoOK: false, requiereAnticipado: true, anticipadoInfo: ANTICIPADO[nivel] };
+    }
+
+    return { dias, nivel, tiempoOK: false, requiereAnticipado: false };
+  }
+
+  function onCambioNunca(){
+    const nunca = document.getElementById('nuncaCortesia').checked;
+    const fechaInput = document.getElementById('fechaUltima');
+    fechaInput.disabled = nunca;
+    if (nunca) fechaInput.value = '';
+    actualizarEstado();
+  }
+
+  function onCambioNivel(){
+    const nivel = document.getElementById('nivel').value;
+    const opcionAdicional = document.getElementById('opcionAdicional');
+    const opcion3 = document.getElementById('opcion3');
+    const opcion4 = document.getElementById('opcion4');
+    const selectCortesias = document.getElementById('cortesias');
+    const notaDepositoReciente = document.getElementById('notaDepositoReciente');
+
+    // Adicional solo disponible para nivel High
+    if (esHigh()) {
+      opcionAdicional.hidden = false;
+      opcionAdicional.disabled = false;
+    } else {
+      opcionAdicional.hidden = true;
+      opcionAdicional.disabled = true;
+      if (selectCortesias.value === 'adicional') selectCortesias.value = '1';
+    }
+
+    // Low: máximo 2 cortesías por año -> ocultar 3 y 4
+    if (nivel === 'low') {
+      opcion3.hidden = true; opcion3.disabled = true;
+      opcion4.hidden = true; opcion4.disabled = true;
+      if (['3','4'].includes(selectCortesias.value)) selectCortesias.value = '1';
+      notaDepositoReciente.style.display = 'flex';
+    } else {
+      opcion3.hidden = false; opcion3.disabled = false;
+      opcion4.hidden = false; opcion4.disabled = false;
+      notaDepositoReciente.style.display = 'none';
+    }
+
+    actualizarEstado();
+  }
+
   function actualizarEstado(){
     const extraBlock = document.getElementById('extraBlock');
+    const anticipadoBlock = document.getElementById('anticipadoBlock');
 
     if (esAdicional()) {
       extraBlock.classList.add('show');
     } else {
       extraBlock.classList.remove('show');
+    }
+
+    const estadoTiempo = calcularEstadoTiempo();
+    if (estadoTiempo.requiereAnticipado) {
+      anticipadoBlock.classList.add('show');
+      const info = estadoTiempo.anticipadoInfo;
+      const u = UMBRALES[paisActual];
+      const monto = info.montos[paisActual];
+      document.getElementById('umbralAnticipadoTexto').innerHTML =
+        `Reclamo anticipado disponible desde los ${info.dias} días. Requiere depósito ≥ <strong>${fmt(monto, u.moneda)}</strong>.`;
+    } else {
+      anticipadoBlock.classList.remove('show');
     }
 
     const u = UMBRALES[paisActual];
@@ -208,10 +329,59 @@
     const resultadoVal = document.getElementById('resultadoVal');
     const notaDeposito = document.getElementById('notaDeposito');
     const notaNgr = document.getElementById('notaNgr');
+    const notaTiempo = document.getElementById('notaTiempo');
+    const notaAnticipado = document.getElementById('notaAnticipado');
 
     resultadoRow.className = 'result-row show';
     notaDeposito.className = 'note-box';
     notaNgr.className = 'note-box';
+    notaTiempo.className = 'note-box';
+    notaAnticipado.className = 'note-box';
+
+    const estadoTiempo = calcularEstadoTiempo();
+    const u = UMBRALES[paisActual];
+
+    // Caso: no se ha indicado la fecha ni se marcó "nunca"
+    if (estadoTiempo.dias === null) {
+      resultadoRow.classList.add('bad');
+      resultadoLbl.textContent = 'Última cortesía';
+      resultadoVal.textContent = 'Falta la fecha';
+      notaTiempo.classList.add('show','warn');
+      notaTiempo.innerHTML = `<span class="ic">⚠️</span><div>Indica la fecha de la última cortesía, o marca "Nunca ha recibido cortesía".</div>`;
+      return;
+    }
+
+    // Caso: no cumple tiempo mínimo y no aplica (o no cumple) reclamo anticipado
+    if (!estadoTiempo.tiempoOK && !estadoTiempo.requiereAnticipado) {
+      resultadoRow.classList.add('bad');
+      resultadoLbl.textContent = 'Tiempo entre cortesías';
+      resultadoVal.textContent = 'No cumple aún';
+      notaTiempo.classList.add('show','bad');
+      const extra = (estadoTiempo.nivel === 'medium' || estadoTiempo.nivel === 'high')
+        ? ` (o ${ANTICIPADO[estadoTiempo.nivel].dias} días con depósito de reclamo anticipado)`
+        : '';
+      notaTiempo.innerHTML = `<span class="ic">⛔</span><div>Han pasado <strong>${estadoTiempo.dias} días</strong> desde la última cortesía. Se requieren al menos <strong>${TIEMPO_NORMAL[estadoTiempo.nivel]} días</strong> para nivel ${estadoTiempo.nivel}${extra}.</div>`;
+      return;
+    }
+
+    // Caso: dentro de la ventana de reclamo anticipado -> requiere depósito mínimo
+    if (estadoTiempo.requiereAnticipado) {
+      const info = estadoTiempo.anticipadoInfo;
+      const monto = info.montos[paisActual];
+      const depositoAnticipado = parseFloat(document.getElementById('depositoAnticipado').value) || 0;
+
+      if (depositoAnticipado >= monto) {
+        notaAnticipado.classList.add('show','ok');
+        notaAnticipado.innerHTML = `<span class="ic">✅</span><div>Cumple reclamo anticipado: depósito de ${fmt(depositoAnticipado,u.moneda)} supera el mínimo de ${fmt(monto,u.moneda)} requerido a los ${info.dias} días.</div>`;
+      } else {
+        resultadoRow.classList.add('bad');
+        resultadoLbl.textContent = 'Reclamo anticipado';
+        resultadoVal.textContent = 'Falta depósito';
+        notaAnticipado.classList.add('show','bad');
+        notaAnticipado.innerHTML = `<span class="ic">⛔</span><div>Para reclamo anticipado (desde los ${info.dias} días) se requiere un depósito ≥ ${fmt(monto,u.moneda)}. Depósito actual: ${fmt(depositoAnticipado,u.moneda)}.</div>`;
+        return;
+      }
+    }
 
     // Caso 1: cortesías 1 a 4 -> aprobación directa
     if (!esAdicional()) {
@@ -222,7 +392,6 @@
     }
 
     // Caso 2: cortesía adicional -> requiere condición de depósito + NGR
-    const u = UMBRALES[paisActual];
     const depositoUnico = parseFloat(document.getElementById('depositoUnico').value) || 0;
     const depositoAcumulado = parseFloat(document.getElementById('depositoAcumulado').value) || 0;
     const ngrInput = document.getElementById('ngr').value;
@@ -262,6 +431,7 @@
   }
 
   switchPais('CO', document.querySelector('.tab-btn'));
+  onCambioNivel();
 </script>
 
 </body>
