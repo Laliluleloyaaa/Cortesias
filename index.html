@@ -138,6 +138,14 @@
 
     <div class="note-box warn" id="notaDepositoReciente" style="display:none"><span class="ic">⚠️</span><div>Nivel <strong>Low</strong>: si el último depósito del cliente fue hace más de <strong>48 horas</strong>, solicita uno nuevo antes de aprobar.</div></div>
 
+    <div class="form-group">
+      <label>¿Ha depositado en los últimos 7 días?</label>
+      <select id="depositoReciente7d" onchange="validar()">
+        <option value="si">Sí</option>
+        <option value="no">No</option>
+      </select>
+    </div>
+
     <div class="divider"></div>
 
     <div class="note-box" id="notaTiempo"></div>
@@ -338,6 +346,16 @@
     notaNgr.className = 'note-box';
     notaTiempo.className = 'note-box';
     notaAnticipado.className = 'note-box';
+
+    // Caso: el usuario no ha depositado en los últimos 7 días -> bloquea y pide solicitar depósito
+    if (document.getElementById('depositoReciente7d').value === 'no') {
+      resultadoRow.classList.add('bad');
+      resultadoLbl.textContent = 'Depósito reciente';
+      resultadoVal.textContent = 'Falta depósito';
+      notaTiempo.classList.add('show','bad');
+      notaTiempo.innerHTML = `<span class="ic">⛔</span><div>El usuario no ha depositado en los últimos 7 días. <strong>Solicita un depósito</strong> antes de otorgar la cortesía.</div>`;
+      return;
+    }
 
     const estadoTiempo = calcularEstadoTiempo();
     const u = UMBRALES[paisActual];
