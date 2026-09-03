@@ -193,6 +193,15 @@
       <div class="note-box" id="notaTiempo"></div>
 
       <!-- Reclamo anticipado para cortesías 1-4 (entre 30 y 59 días) -->
+      <div class="macro-box" id="macroAnticipado">
+        <span class="tag">📜 Macro obligatoria — enviar tal cual</span>
+        <span class="macro-name">MACRO APROBADA LEGAL - SOLICITAR DEPÓSITO EXTRA CORTESÍA ANTICIPADA</span>
+        <span id="macroAnticipadoTexto"></span>
+        <button class="copy-btn" onclick="copiarTexto('macroAnticipadoTexto', this)">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="8" y="8" width="12" height="12" rx="2" stroke="currentColor" stroke-width="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10" stroke="currentColor" stroke-width="2"/></svg>
+          Copiar
+        </button>
+      </div>
       <div class="extra-block" id="anticipadoBlock">
         <div class="check-row">
           <input type="checkbox" id="depositoAnticipadoHecho" onchange="validar()">
@@ -204,14 +213,6 @@
         </div>
       </div>
       <div class="note-box" id="notaAnticipado"></div>
-      <div class="macro-box" id="macroAnticipado">
-        <span class="tag">📜 Macro obligatoria — enviar tal cual</span>
-        <span class="macro-name">MACRO APROBADA LEGAL - SOLICITAR DEPÓSITO EXTRA CORTESÍA ANTICIPADA</span>
-        <span id="macroAnticipadoTexto"></span>
-        <button class="copy-btn" onclick="copiarTexto('macroAnticipadoTexto', this)">
-          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="8" y="8" width="12" height="12" rx="2" stroke="currentColor" stroke-width="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10" stroke="currentColor" stroke-width="2"/></svg>
-          Copiar
-        </button>
       </div>
 
       <!-- Cortesías adicionales (5ta en adelante) -->
@@ -272,6 +273,14 @@
     </div>
     <div class="note-box" id="notaNgrTotal"></div>
     <div class="note-box" id="notaPremio"></div>
+    <div class="script-box" id="notaComentario">
+      <span class="tag">💬 Comentario a dejar en el flag</span>
+      <span id="comentarioTexto">cs_courtesy</span>
+      <button class="copy-btn" onclick="copiarTexto('comentarioTexto', this)">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="8" y="8" width="12" height="12" rx="2" stroke="currentColor" stroke-width="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10" stroke="currentColor" stroke-width="2"/></svg>
+        Copiar
+      </button>
+    </div>
 
     <div class="script-box" id="scriptRechazo">
       <span class="tag">📋 Macro sugerida</span>
@@ -298,8 +307,8 @@
 
   const SCRIPT_RECHAZO = "Entiendo que desees aprovechar algún beneficio adicional 🙌 En este caso me gustaria comentarte que lamentablemente por este canal ya no otorgamos este tipo de beneficios, pero tienes varias formas de disfrutar más recompensas con nosotros:\n\n⭐ Participa en las dinámicas de nuestro chat de casino:\n- Lunes a Viernes de 9am a medianoche\n- Fines de semana de 12pm a medianoche\n⭐ Canjea tus puntos de lealtad en la tienda de bonos\n⭐ Mantente activo semana a semana y accede a los beneficios de tu programa de lealtad\n\nDéjame saber si tienes alguna solicitud adicional con la que pueda ayudarte 🙏";
 
-  function macroTexto(intro, monto, premio){
-    return `¡Buenas noticias! Puedes acceder a ${intro} 🎁 \nPara poder activarla, realiza un nuevo depósito de mínimo ${monto}, juega el 100% y reclama un ${premio}.\n\nRecuerda que avanzar con esta promo es completamente voluntario, tómate tu tiempo y decide solo si te sientes cómodo/a haciéndolo 💙\n\nEstaré atenta a tus indicaciones 🙏`;
+  function macroTexto(intro, monto, reclamaTexto){
+    return `¡Buenas noticias! Puedes acceder a ${intro} 🎁 \nPara poder activarla, realiza un nuevo depósito de mínimo ${monto}, juega el 100% y reclama ${reclamaTexto}.\n\nRecuerda que avanzar con esta promo es completamente voluntario, tómate tu tiempo y decide solo si te sientes cómodo/a haciéndolo 💙\n\nEstaré atenta a tus indicaciones 🙏`;
   }
 
   function copiarTexto(elementId, btn){
@@ -335,6 +344,26 @@
     } else {
       return `1 Wheelspin king 2 CS + 1 Manual Apuesta Combi 3x CS de ${fmt(MONTO_MIXTO[paisActual], m)}`;
     }
+  }
+
+  // Nombre amigable del premio para el cliente (usado solo dentro de las macros que se le envían)
+  function textoPremioCliente(){
+    const tipo = document.getElementById('tipoJugador').value;
+    const m = MONEDA[paisActual];
+    if (tipo === 'casino') {
+      return 'Giro del Rey Hiperpotenciado';
+    } else if (tipo === 'sportsbook') {
+      return `2 apuestas gratis combinadas de ${fmt(MONTO_SPORTSBOOK[paisActual], m)}`;
+    } else {
+      return `un Giro del Rey Potenciado + 1 apuesta gratis combinada de ${fmt(MONTO_MIXTO[paisActual], m)}`;
+    }
+  }
+
+  // Texto de "reclama ___" con el artículo correcto: "un" solo si el premio es singular sin numeral propio
+  function textoReclamaCliente(){
+    const tipo = document.getElementById('tipoJugador').value;
+    const premio = textoPremioCliente();
+    return tipo === 'casino' ? `un ${premio}` : premio;
   }
 
   function esAdicional(){
@@ -422,6 +451,7 @@
     notaAnticipado.className = 'note-box';
     scriptRechazo.className = 'script-box';
     notaPremio.className = 'note-box';
+    document.getElementById('notaComentario').className = 'script-box';
     document.getElementById('macroDeposito').className = 'macro-box';
     document.getElementById('macroAnticipado').className = 'macro-box';
     document.getElementById('macroAdicional').className = 'macro-box';
@@ -459,7 +489,7 @@
       notaDeposito3d.classList.add('show','bad');
       notaDeposito3d.innerHTML = `<span class="ic">⛔</span><div>El jugador no tiene un depósito en los últimos 3 días. <strong>Solicítalo</strong> antes de otorgar la cortesía (debe consumir el 100% antes de recibir el beneficio).</div>`;
       document.getElementById('macroDeposito').classList.add('show');
-      document.getElementById('macroDepositoTexto').textContent = macroTexto('una promo Rush', '$____', textoPremio());
+      document.getElementById('macroDepositoTexto').textContent = macroTexto('una promo Rush', fmt(ANTICIPADO_GARANTIZADA[paisActual], m), textoReclamaCliente());
       return;
     }
 
@@ -497,6 +527,9 @@
       }
 
       if (requiereAnticipado) {
+        document.getElementById('macroAnticipado').classList.add('show');
+        document.getElementById('macroAnticipadoTexto').textContent = macroTexto('una promo de forma anticipada', fmt(ANTICIPADO_GARANTIZADA[paisActual], m), textoReclamaCliente());
+
         const depositoHecho = document.getElementById('depositoAnticipadoHecho').checked;
         const saldoConsumido = document.getElementById('saldoConsumido').checked;
         if (depositoHecho && saldoConsumido) {
@@ -511,8 +544,6 @@
           if (!depositoHecho) faltantes.push('el nuevo depósito');
           if (!saldoConsumido) faltantes.push('consumir el 100% del saldo');
           notaAnticipado.innerHTML = `<span class="ic">⛔</span><div>Para reclamo anticipado (desde los ${TIEMPO_ANTICIPADO} días) todavía falta: <strong>${faltantes.join(' y ')}</strong>.</div>`;
-          document.getElementById('macroAnticipado').classList.add('show');
-          document.getElementById('macroAnticipadoTexto').textContent = macroTexto('una promo de forma anticipada', fmt(ANTICIPADO_GARANTIZADA[paisActual], m), textoPremio());
           return;
         }
       }
@@ -523,6 +554,7 @@
       resultadoVal.textContent = 'Aprobada';
       notaPremio.classList.add('show','ok');
       notaPremio.innerHTML = `<span class="ic">🎁</span><div><strong>Otorgar:</strong> ${textoPremio()}</div>`;
+      document.getElementById('notaComentario').classList.add('show');
       return;
     }
 
@@ -548,7 +580,7 @@
 
     // Cumple la condición histórica de depósito -> igual se debe pedir SIEMPRE un depósito nuevo y confirmar que lo consumió
     document.getElementById('macroAdicional').classList.add('show');
-    document.getElementById('macroAdicionalTexto').textContent = macroTexto('una promo Rush adicional', fmt(ADICIONAL_UNICO[paisActual], m), textoPremio());
+    document.getElementById('macroAdicionalTexto').textContent = macroTexto('una promo Rush adicional', fmt(ANTICIPADO_GARANTIZADA[paisActual], m), textoReclamaCliente());
     document.getElementById('checksAdicionalBlock').classList.add('show');
 
     const depositoAdicionalHecho = document.getElementById('depositoAdicionalHecho').checked;
@@ -560,6 +592,7 @@
       resultadoVal.textContent = 'Aprobada';
       notaPremio.classList.add('show','ok');
       notaPremio.innerHTML = `<span class="ic">🎁</span><div><strong>Otorgar:</strong> ${textoPremio()}</div>`;
+      document.getElementById('notaComentario').classList.add('show');
     } else {
       resultadoRow.classList.add('bad');
       resultadoLbl.textContent = 'Cortesía adicional';
