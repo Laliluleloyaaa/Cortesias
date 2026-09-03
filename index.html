@@ -54,6 +54,11 @@
   .threshold-note{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:.78rem;color:var(--muted);margin-bottom:18px;line-height:1.5}
   .threshold-note strong{color:var(--text)}
 
+  .check-row{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:13px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;margin-bottom:12px;transition:border-color .2s}
+  .check-row:hover{border-color:var(--accent)}
+  .check-row input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent);cursor:pointer;flex-shrink:0}
+  .check-row span{font-size:.92rem;color:var(--text);font-weight:500}
+
   button{width:100%;background:var(--accent);color:#0d0f14;font-family:'DM Sans',sans-serif;font-weight:700;letter-spacing:.3px;border:none;padding:14px;border-radius:10px;font-size:.95rem;cursor:pointer;margin-top:6px;transition:opacity .15s, transform .1s}
   button:hover{opacity:.9}
   button:active{transform:scale(0.99)}
@@ -146,10 +151,10 @@
       <div class="form-group">
         <label>Última cortesía recibida</label>
         <input type="date" id="fechaUltima" onchange="actualizarEstado()">
-        <label style="text-transform:none;font-weight:500;font-size:.82rem;color:var(--text);display:flex;align-items:center;gap:8px;margin-top:2px;letter-spacing:normal">
-          <input type="checkbox" id="nuncaCortesia" onchange="onCambioNunca()" style="width:auto;">
-          Nunca ha recibido cortesía
-        </label>
+        <div class="check-row" style="margin-top:8px;margin-bottom:0">
+          <input type="checkbox" id="nuncaCortesia" onchange="onCambioNunca()">
+          <span>Nunca ha recibido cortesía</span>
+        </div>
       </div>
 
       <div class="form-group">
@@ -169,10 +174,13 @@
 
       <!-- Reclamo anticipado para cortesías 1-4 (entre 30 y 59 días) -->
       <div class="extra-block" id="anticipadoBlock">
-        <div class="threshold-note" id="umbralAnticipadoTexto"></div>
-        <div class="form-group">
-          <label>Depósito nuevo para reclamo anticipado</label>
-          <div class="input-wrap"><span class="cur" id="curAnticipado">$</span><input type="number" id="depositoAnticipado" placeholder="0" oninput="validar()"></div>
+        <div class="check-row">
+          <input type="checkbox" id="depositoAnticipadoHecho" onchange="validar()">
+          <span>Nuevo depósito realizado</span>
+        </div>
+        <div class="check-row">
+          <input type="checkbox" id="saldoConsumido" onchange="validar()">
+          <span>Saldo consumido (apostó el 100%)</span>
         </div>
       </div>
       <div class="note-box" id="notaAnticipado"></div>
@@ -197,7 +205,6 @@
         </div>
       </div>
 
-      <button onclick="validar()">Validar cortesía</button>
     </div>
 
     <div class="result-row" id="resultadoRow">
@@ -210,7 +217,7 @@
     <div class="note-box" id="notaPremio"></div>
 
     <div class="script-box" id="scriptRechazo">
-      <span class="tag">📋 Script sugerido</span>
+      <span class="tag">📋 Macro sugerida</span>
       <span id="scriptRechazoTexto"></span>
     </div>
   </div>
@@ -287,7 +294,6 @@
     }
 
     document.getElementById('curNgrTotal').textContent = m;
-    document.getElementById('curAnticipado').textContent = m;
     document.getElementById('curUnico').textContent = m;
     document.getElementById('curAcumulado').textContent = m;
 
@@ -305,8 +311,6 @@
     const requiereAnticipado = !esAdicional() && dias !== null && dias !== Infinity && dias >= TIEMPO_ANTICIPADO && dias < TIEMPO_NORMAL;
     if (requiereAnticipado) {
       anticipadoBlock.classList.add('show');
-      document.getElementById('umbralAnticipadoTexto').innerHTML =
-        `Reclamo anticipado disponible desde los ${TIEMPO_ANTICIPADO} días. Requiere nuevo depósito ≥ <strong>${fmt(ANTICIPADO_GARANTIZADA[paisActual], m)}</strong> y apostar el 100%.`;
     } else {
       anticipadoBlock.classList.remove('show');
     }
@@ -394,7 +398,7 @@
       tiempoOK = true;
     } else if (dias >= TIEMPO_NORMAL) {
       tiempoOK = true;
-    } else if (dias >= TIEMPO_ANTICIPADO) {
+    } else if (!esAdicional() && dias >= TIEMPO_ANTICIPADO) {
       requiereAnticipado = true;
     }
 
@@ -408,17 +412,20 @@
     }
 
     if (requiereAnticipado) {
-      const depositoAnticipado = parseFloat(document.getElementById('depositoAnticipado').value) || 0;
-      const montoAnticipado = ANTICIPADO_GARANTIZADA[paisActual];
-      if (depositoAnticipado >= montoAnticipado) {
+      const depositoHecho = document.getElementById('depositoAnticipadoHecho').checked;
+      const saldoConsumido = document.getElementById('saldoConsumido').checked;
+      if (depositoHecho && saldoConsumido) {
         notaAnticipado.classList.add('show','ok');
-        notaAnticipado.innerHTML = `<span class="ic">✅</span><div>Cumple reclamo anticipado: depósito de ${fmt(depositoAnticipado,m)} supera el mínimo de ${fmt(montoAnticipado,m)}. Recuerda que debe apostar el 100% para recibir el regalo.</div>`;
+        notaAnticipado.innerHTML = `<span class="ic">✅</span><div>Cumple reclamo anticipado: nuevo depósito realizado y saldo consumido al 100%.</div>`;
       } else {
         resultadoRow.classList.add('bad');
         resultadoLbl.textContent = 'Reclamo anticipado';
-        resultadoVal.textContent = 'Falta depósito';
+        resultadoVal.textContent = 'Falta requisito';
         notaAnticipado.classList.add('show','bad');
-        notaAnticipado.innerHTML = `<span class="ic">⛔</span><div>Para reclamo anticipado (desde los ${TIEMPO_ANTICIPADO} días) se requiere un nuevo depósito ≥ ${fmt(montoAnticipado,m)}. Depósito actual: ${fmt(depositoAnticipado,m)}.</div>`;
+        const faltantes = [];
+        if (!depositoHecho) faltantes.push('el nuevo depósito');
+        if (!saldoConsumido) faltantes.push('consumir el 100% del saldo');
+        notaAnticipado.innerHTML = `<span class="ic">⛔</span><div>Para reclamo anticipado (desde los ${TIEMPO_ANTICIPADO} días) todavía falta: <strong>${faltantes.join(' y ')}</strong>.</div>`;
         return;
       }
     }
