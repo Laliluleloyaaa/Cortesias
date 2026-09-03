@@ -19,9 +19,10 @@
   header p{font-size:.8rem;color:var(--muted);margin-top:2px}
 
   .tabs{display:flex;padding:0 40px;background:var(--surface);border-bottom:2px solid var(--border)}
-  .tab-btn{padding:16px 28px;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:600;letter-spacing:.5px;background:none;border:none;border-bottom:3px solid transparent;color:var(--muted);cursor:pointer;transition:all .2s;margin-bottom:-2px}
+  .tab-btn{padding:16px 28px;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:600;letter-spacing:.5px;background:none;border:none;border-bottom:3px solid transparent;color:var(--muted);cursor:pointer;transition:all .2s;margin-bottom:-2px;display:flex;align-items:center;gap:6px}
   .tab-btn:hover{color:var(--text)}
   .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+  .tab-btn img{width:20px;height:14px;object-fit:cover;border-radius:2px}
 
   .tab-content{display:none;padding:40px;max-width:560px;margin:0 auto}
   .tab-content.active{display:block}
@@ -46,7 +47,6 @@
 
   .divider{height:1px;background:var(--border);margin:22px 0}
 
-  /* Bloque condicional (solo visible desde la 5ta cortesía) */
   .extra-block{display:none;flex-direction:column;gap:0}
   .extra-block.show{display:flex}
   .extra-block .form-group{margin-bottom:14px}
@@ -77,6 +77,10 @@
   .note-box.bad{background:rgba(255,60,90,.1);border:1px solid rgba(255,60,90,.35);color:#d8dce8}
   .note-box.bad strong{color:var(--bad)}
 
+  .script-box{margin-top:12px;border-radius:10px;padding:16px 18px;font-size:.82rem;line-height:1.6;background:var(--surface2);border:1px solid var(--border);color:var(--text);display:none;white-space:pre-line}
+  .script-box.show{display:block}
+  .script-box .tag{display:block;font-size:.7rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+
   @media(max-width:600px){
     header{padding:20px}
     header h1{font-size:1.5rem}
@@ -93,14 +97,14 @@
   <div class="logo">V</div>
   <div>
     <h1>VALIDADOR DE <span>CORTESÍAS</span></h1>
-    <p>Condiciones para cortesías adicionales por país</p>
+    <p>Solo aplica para jugadores de Alto Valor (VIP_01 / VIP 1)</p>
   </div>
 </header>
 
 <div class="tabs">
-  <button class="tab-btn active" onclick="switchPais('CO',this)"><img src="https://flagcdn.com/w40/co.png" alt="Colombia" style="width:20px;height:14px;object-fit:cover;border-radius:2px;vertical-align:-2px;margin-right:6px"> Colombia</button>
-  <button class="tab-btn" onclick="switchPais('MX',this)"><img src="https://flagcdn.com/w40/mx.png" alt="México" style="width:20px;height:14px;object-fit:cover;border-radius:2px;vertical-align:-2px;margin-right:6px"> México</button>
-  <button class="tab-btn" onclick="switchPais('PE',this)"><img src="https://flagcdn.com/w40/pe.png" alt="Perú" style="width:20px;height:14px;object-fit:cover;border-radius:2px;vertical-align:-2px;margin-right:6px"> Perú</button>
+  <button class="tab-btn active" onclick="switchPais('CO',this)"><img src="https://flagcdn.com/w40/co.png" alt="Colombia"> Colombia</button>
+  <button class="tab-btn" onclick="switchPais('MX',this)"><img src="https://flagcdn.com/w40/mx.png" alt="México"> México</button>
+  <button class="tab-btn" onclick="switchPais('PE',this)"><img src="https://flagcdn.com/w40/pe.png" alt="Perú"> Perú</button>
 </div>
 
 <div class="tab-content active">
@@ -108,103 +112,123 @@
     <h2><span class="dot"></span>Validación de cortesía</h2>
 
     <div class="form-group">
-      <label>Nivel del usuario</label>
-      <select id="nivel" onchange="onCambioNivel()">
+      <label>Perfil del jugador</label>
+      <select id="nivel" onchange="actualizarEstado()">
         <option value="low">Low</option>
         <option value="medium">Medium</option>
-        <option value="high">High</option>
+        <option value="high">Alto valor (VIP_01 / VIP 1)</option>
       </select>
     </div>
 
-    <div class="form-group">
-      <label>Número de cortesía a validar</label>
-      <select id="cortesias" onchange="actualizarEstado()">
-        <option value="1">1</option>
-        <option value="2">2</option>
-        <option value="3" id="opcion3">3</option>
-        <option value="4" id="opcion4">4</option>
-        <option value="adicional" id="opcionAdicional">Adicional</option>
-      </select>
-    </div>
-
-    <div class="form-group">
-      <label>Última cortesía recibida</label>
-      <input type="date" id="fechaUltima" onchange="actualizarEstado()">
-      <label style="text-transform:none;font-weight:500;font-size:.82rem;color:var(--text);display:flex;align-items:center;gap:8px;margin-top:2px;letter-spacing:normal">
-        <input type="checkbox" id="nuncaCortesia" onchange="onCambioNunca()" style="width:auto;">
-        Nunca ha recibido cortesía
-      </label>
-    </div>
-
-    <div class="note-box warn" id="notaDepositoReciente" style="display:none"><span class="ic">⚠️</span><div>Nivel <strong>Low</strong>: si el último depósito del cliente fue hace más de <strong>48 horas</strong>, solicita uno nuevo antes de aprobar.</div></div>
-
-    <div class="form-group">
-      <label>¿Ha depositado en los últimos 7 días?</label>
-      <select id="depositoReciente7d" onchange="validar()">
-        <option value="si">Sí</option>
-        <option value="no">No</option>
-      </select>
-    </div>
-
-    <div class="divider"></div>
-
-    <div class="note-box" id="notaTiempo"></div>
-
-    <!-- Bloque condicional: reclamo anticipado (Medium/High dentro de la ventana) -->
-    <div class="extra-block" id="anticipadoBlock">
-      <div class="threshold-note" id="umbralAnticipadoTexto"></div>
+    <div class="extra-block" id="bloqueApto">
       <div class="form-group">
-        <label>Depósito para reclamo anticipado</label>
-        <div class="input-wrap"><span class="cur" id="curAnticipado">$</span><input type="number" id="depositoAnticipado" placeholder="0" oninput="validar()"></div>
+        <label>Tipo de jugador</label>
+        <select id="tipoJugador" onchange="validar()">
+          <option value="casino">Casino</option>
+          <option value="sportsbook">Sportsbook</option>
+          <option value="mixto">Mixto</option>
+        </select>
       </div>
-    </div>
-
-    <div class="note-box" id="notaAnticipado"></div>
-
-
-    <!-- Bloque condicional: solo aparece si es Adicional -->
-    <div class="extra-block" id="extraBlock">
-      <div class="threshold-note" id="umbralesTexto"></div>
 
       <div class="form-group">
-        <label>Depósito único más alto</label>
-        <div class="input-wrap"><span class="cur" id="curUnico">$</span><input type="number" id="depositoUnico" placeholder="0" oninput="validar()"></div>
+        <label>NGR total del jugador</label>
+        <div class="input-wrap"><span class="cur" id="curNgrTotal">$</span><input type="number" id="ngrTotal" placeholder="0" oninput="validar()"></div>
       </div>
-      <div class="form-group">
-        <label>Depósitos acumulados</label>
-        <div class="input-wrap"><span class="cur" id="curAcumulado">$</span><input type="number" id="depositoAcumulado" placeholder="0" oninput="validar()"></div>
-      </div>
-      <div class="form-group">
-        <label>NGR del usuario (últimos 30 días)</label>
-        <div class="input-wrap"><span class="cur" id="curNgr">$</span><input type="number" id="ngr" placeholder="Ej: 150000" oninput="validar()"></div>
-      </div>
-    </div>
 
-    <button onclick="validar()">Validar cortesía</button>
+      <div class="form-group">
+        <label>¿Depósito en los últimos 3 días?</label>
+        <select id="depositoReciente3d" onchange="validar()">
+          <option value="si">Sí</option>
+          <option value="no">No</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Última cortesía recibida</label>
+        <input type="date" id="fechaUltima" onchange="actualizarEstado()">
+        <label style="text-transform:none;font-weight:500;font-size:.82rem;color:var(--text);display:flex;align-items:center;gap:8px;margin-top:2px;letter-spacing:normal">
+          <input type="checkbox" id="nuncaCortesia" onchange="onCambioNunca()" style="width:auto;">
+          Nunca ha recibido cortesía
+        </label>
+      </div>
+
+      <div class="form-group">
+        <label>Número de cortesía a validar</label>
+        <select id="cortesias" onchange="actualizarEstado()">
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="adicional">Adicional</option>
+        </select>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="note-box" id="notaTiempo"></div>
+
+      <!-- Reclamo anticipado para cortesías 1-4 (entre 30 y 59 días) -->
+      <div class="extra-block" id="anticipadoBlock">
+        <div class="threshold-note" id="umbralAnticipadoTexto"></div>
+        <div class="form-group">
+          <label>Depósito nuevo para reclamo anticipado</label>
+          <div class="input-wrap"><span class="cur" id="curAnticipado">$</span><input type="number" id="depositoAnticipado" placeholder="0" oninput="validar()"></div>
+        </div>
+      </div>
+      <div class="note-box" id="notaAnticipado"></div>
+
+      <!-- Cortesías adicionales (5ta en adelante) -->
+      <div class="extra-block" id="adicionalBlock">
+        <div class="form-group">
+          <label>¿NGR positivo desde la última cortesía otorgada?</label>
+          <select id="ngrPositivoAdicional" onchange="validar()">
+            <option value="si">Sí</option>
+            <option value="no">No</option>
+          </select>
+        </div>
+        <div class="threshold-note" id="umbralesAdicionalTexto"></div>
+        <div class="form-group">
+          <label>Depósito único más alto (últimos 30 días)</label>
+          <div class="input-wrap"><span class="cur" id="curUnico">$</span><input type="number" id="depositoUnico" placeholder="0" oninput="validar()"></div>
+        </div>
+        <div class="form-group">
+          <label>Depósitos acumulados (últimos 30 días)</label>
+          <div class="input-wrap"><span class="cur" id="curAcumulado">$</span><input type="number" id="depositoAcumulado" placeholder="0" oninput="validar()"></div>
+        </div>
+      </div>
+
+      <button onclick="validar()">Validar cortesía</button>
+    </div>
 
     <div class="result-row" id="resultadoRow">
       <span class="lbl" id="resultadoLbl">Estado</span>
       <span class="val" id="resultadoVal">—</span>
     </div>
 
-    <div class="note-box" id="notaDeposito"></div>
-    <div class="note-box" id="notaNgr"></div>
+    <div class="note-box" id="notaDeposito3d"></div>
+    <div class="note-box" id="notaNgrTotal"></div>
+    <div class="note-box" id="notaPremio"></div>
+
+    <div class="script-box" id="scriptRechazo">
+      <span class="tag">📋 Script sugerido</span>
+      <span id="scriptRechazoTexto"></span>
+    </div>
   </div>
 </div>
 
 <script>
-  const UMBRALES = {
-    CO: { unico: 500000,   acumulado: 1500000, moneda: '$' },
-    MX: { unico: 2000,     acumulado: 6000,    moneda: '$' },
-    PE: { unico: 400,      acumulado: 1200,    moneda: 'S/' }
-  };
+  const TOTAL_NGR = { CO: 6000000, MX: 6000, PE: 1600 };
+  const ANTICIPADO_GARANTIZADA = { CO: 50000, MX: 200, PE: 50 };
+  const ADICIONAL_UNICO = { CO: 500000, MX: 2000, PE: 400 };
+  const ADICIONAL_ACUM = { CO: 1500000, MX: 6000, PE: 1200 };
+  const MONEDA = { CO: '$', MX: '$', PE: 'S/' };
+  const TIEMPO_NORMAL = 60;
+  const TIEMPO_ANTICIPADO = 30;
 
-  const TIEMPO_NORMAL = { low: 120, medium: 90, high: 60 };
+  const MONTO_SPORTSBOOK = { CO: 25000, MX: 250, PE: 60 };
+  const MONTO_MIXTO = { CO: 20000, MX: 200, PE: 30 };
 
-  const ANTICIPADO = {
-    medium: { dias: 60, montos: { CO: 20000,  MX: 100, PE: 20 } },
-    high:   { dias: 30, montos: { CO: 50000,  MX: 200, PE: 50 } }
-  };
+  const SCRIPT_RECHAZO = "Entiendo que desees aprovechar algún beneficio adicional 🙌 En este caso me gustaria comentarte que lamentablemente por este canal ya no otorgamos este tipo de beneficios, pero tienes varias formas de disfrutar más recompensas con nosotros:\n\n⭐ Participa en las dinámicas de nuestro chat de casino:\n- Lunes a Viernes de 9am a medianoche\n- Fines de semana de 12pm a medianoche\n⭐ Canjea tus puntos de lealtad en la tienda de bonos\n⭐ Mantente activo semana a semana y accede a los beneficios de tu programa de lealtad\n\nDéjame saber si tienes alguna solicitud adicional con la que pueda ayudarte 🙏";
 
   let paisActual = 'CO';
 
@@ -212,26 +236,24 @@
     return moneda + Number(valor).toLocaleString('es');
   }
 
-  function switchPais(pais, btn){
-    paisActual = pais;
-    document.querySelectorAll('.tab-btn').forEach(el=>el.classList.remove('active'));
-    btn.classList.add('active');
+  function esHigh(){
+    return document.getElementById('nivel').value === 'high';
+  }
 
-    const u = UMBRALES[pais];
-    document.getElementById('curUnico').textContent = u.moneda;
-    document.getElementById('curAcumulado').textContent = u.moneda;
-    document.getElementById('curNgr').textContent = u.moneda;
-    document.getElementById('curAnticipado').textContent = u.moneda;
-
-    actualizarEstado();
+  function textoPremio(){
+    const tipo = document.getElementById('tipoJugador').value;
+    const m = MONEDA[paisActual];
+    if (tipo === 'casino') {
+      return '1 Wheelspin king 3 CS';
+    } else if (tipo === 'sportsbook') {
+      return `2 Manual Apuesta Combi 3x CS de ${fmt(MONTO_SPORTSBOOK[paisActual], m)}`;
+    } else {
+      return `1 Wheelspin king 2 CS + 1 Manual Apuesta Combi 3x CS de ${fmt(MONTO_MIXTO[paisActual], m)}`;
+    }
   }
 
   function esAdicional(){
     return document.getElementById('cortesias').value === 'adicional';
-  }
-
-  function esHigh(){
-    return document.getElementById('nivel').value === 'high';
   }
 
   function diasDesdeUltima(){
@@ -244,21 +266,52 @@
     return Math.floor((hoy - fecha) / (1000 * 60 * 60 * 24));
   }
 
-  function calcularEstadoTiempo(){
-    const nivel = document.getElementById('nivel').value;
-    const dias = diasDesdeUltima();
+  function switchPais(pais, btn){
+    paisActual = pais;
+    document.querySelectorAll('.tab-btn').forEach(el=>el.classList.remove('active'));
+    btn.classList.add('active');
+    actualizarEstado();
+  }
 
-    if (dias === null) return { dias: null, nivel };
-    if (dias === Infinity) return { dias: Infinity, nivel, tiempoOK: true };
+  function actualizarEstado(){
+    const bloqueApto = document.getElementById('bloqueApto');
+    const anticipadoBlock = document.getElementById('anticipadoBlock');
+    const adicionalBlock = document.getElementById('adicionalBlock');
+    const m = MONEDA[paisActual];
 
-    const tiempoNormal = TIEMPO_NORMAL[nivel];
-    if (dias >= tiempoNormal) return { dias, nivel, tiempoOK: true };
-
-    if ((nivel === 'medium' || nivel === 'high') && dias >= ANTICIPADO[nivel].dias) {
-      return { dias, nivel, tiempoOK: false, requiereAnticipado: true, anticipadoInfo: ANTICIPADO[nivel] };
+    // Solo se muestran los campos de validación si el perfil es Alto Valor
+    if (esHigh()) {
+      bloqueApto.classList.add('show');
+    } else {
+      bloqueApto.classList.remove('show');
     }
 
-    return { dias, nivel, tiempoOK: false, requiereAnticipado: false };
+    document.getElementById('curNgrTotal').textContent = m;
+    document.getElementById('curAnticipado').textContent = m;
+    document.getElementById('curUnico').textContent = m;
+    document.getElementById('curAcumulado').textContent = m;
+
+    // Bloque adicional (5ta cortesía en adelante)
+    if (esAdicional()) {
+      adicionalBlock.classList.add('show');
+      document.getElementById('umbralesAdicionalTexto').innerHTML =
+        `Umbral últimos 30 días (${paisActual}): depósito único ≥ <strong>${fmt(ADICIONAL_UNICO[paisActual], m)}</strong> &nbsp;o&nbsp; acumulado ≥ <strong>${fmt(ADICIONAL_ACUM[paisActual], m)}</strong>`;
+    } else {
+      adicionalBlock.classList.remove('show');
+    }
+
+    // Bloque de reclamo anticipado (para 1-4, si aplica según fecha)
+    const dias = diasDesdeUltima();
+    const requiereAnticipado = !esAdicional() && dias !== null && dias !== Infinity && dias >= TIEMPO_ANTICIPADO && dias < TIEMPO_NORMAL;
+    if (requiereAnticipado) {
+      anticipadoBlock.classList.add('show');
+      document.getElementById('umbralAnticipadoTexto').innerHTML =
+        `Reclamo anticipado disponible desde los ${TIEMPO_ANTICIPADO} días. Requiere nuevo depósito ≥ <strong>${fmt(ANTICIPADO_GARANTIZADA[paisActual], m)}</strong> y apostar el 100%.`;
+    } else {
+      anticipadoBlock.classList.remove('show');
+    }
+
+    validar();
   }
 
   function onCambioNunca(){
@@ -269,99 +322,63 @@
     actualizarEstado();
   }
 
-  function onCambioNivel(){
-    const nivel = document.getElementById('nivel').value;
-    const opcionAdicional = document.getElementById('opcionAdicional');
-    const opcion3 = document.getElementById('opcion3');
-    const opcion4 = document.getElementById('opcion4');
-    const selectCortesias = document.getElementById('cortesias');
-    const notaDepositoReciente = document.getElementById('notaDepositoReciente');
-
-    // Adicional solo disponible para nivel High
-    if (esHigh()) {
-      opcionAdicional.hidden = false;
-      opcionAdicional.disabled = false;
-    } else {
-      opcionAdicional.hidden = true;
-      opcionAdicional.disabled = true;
-      if (selectCortesias.value === 'adicional') selectCortesias.value = '1';
-    }
-
-    // Low: máximo 2 cortesías por año -> solo 1 y 2
-    // Medium y High: hasta 4 (Adicional queda exclusivo de High, ya controlado arriba)
-    if (nivel === 'low') {
-      opcion3.hidden = true; opcion3.disabled = true;
-      opcion4.hidden = true; opcion4.disabled = true;
-      if (['3','4'].includes(selectCortesias.value)) selectCortesias.value = '1';
-      notaDepositoReciente.style.display = 'flex';
-    } else {
-      opcion3.hidden = false; opcion3.disabled = false;
-      opcion4.hidden = false; opcion4.disabled = false;
-      notaDepositoReciente.style.display = 'none';
-    }
-
-    actualizarEstado();
-  }
-
-  function actualizarEstado(){
-    const extraBlock = document.getElementById('extraBlock');
-    const anticipadoBlock = document.getElementById('anticipadoBlock');
-
-    if (esAdicional()) {
-      extraBlock.classList.add('show');
-    } else {
-      extraBlock.classList.remove('show');
-    }
-
-    const estadoTiempo = calcularEstadoTiempo();
-    if (estadoTiempo.requiereAnticipado) {
-      anticipadoBlock.classList.add('show');
-      const info = estadoTiempo.anticipadoInfo;
-      const u = UMBRALES[paisActual];
-      const monto = info.montos[paisActual];
-      document.getElementById('umbralAnticipadoTexto').innerHTML =
-        `Reclamo anticipado disponible desde los ${info.dias} días. Requiere depósito ≥ <strong>${fmt(monto, u.moneda)}</strong>.`;
-    } else {
-      anticipadoBlock.classList.remove('show');
-    }
-
-    const u = UMBRALES[paisActual];
-    document.getElementById('umbralesTexto').innerHTML =
-      `Umbral (${paisActual}): depósito único ≥ <strong>${fmt(u.unico,u.moneda)}</strong> &nbsp;o&nbsp; acumulado ≥ <strong>${fmt(u.acumulado,u.moneda)}</strong>`;
-
-    validar();
-  }
-
   function validar(){
     const resultadoRow = document.getElementById('resultadoRow');
     const resultadoLbl = document.getElementById('resultadoLbl');
     const resultadoVal = document.getElementById('resultadoVal');
-    const notaDeposito = document.getElementById('notaDeposito');
-    const notaNgr = document.getElementById('notaNgr');
+    const notaDeposito3d = document.getElementById('notaDeposito3d');
+    const notaNgrTotal = document.getElementById('notaNgrTotal');
     const notaTiempo = document.getElementById('notaTiempo');
     const notaAnticipado = document.getElementById('notaAnticipado');
+    const scriptRechazo = document.getElementById('scriptRechazo');
+    const notaPremio = document.getElementById('notaPremio');
 
     resultadoRow.className = 'result-row show';
-    notaDeposito.className = 'note-box';
-    notaNgr.className = 'note-box';
+    notaDeposito3d.className = 'note-box';
+    notaNgrTotal.className = 'note-box';
     notaTiempo.className = 'note-box';
     notaAnticipado.className = 'note-box';
+    scriptRechazo.className = 'script-box';
+    notaPremio.className = 'note-box';
 
-    // Caso: el usuario no ha depositado en los últimos 7 días -> bloquea y pide solicitar depósito
-    if (document.getElementById('depositoReciente7d').value === 'no') {
+    const m = MONEDA[paisActual];
+
+    // Paso 0: solo aplica para Alto Valor
+    if (!esHigh()) {
       resultadoRow.classList.add('bad');
-      resultadoLbl.textContent = 'Depósito reciente';
-      resultadoVal.textContent = 'Falta depósito';
-      notaTiempo.classList.add('show','bad');
-      notaTiempo.innerHTML = `<span class="ic">⛔</span><div>El usuario no ha depositado en los últimos 7 días. <strong>Solicita un depósito</strong> antes de otorgar la cortesía.</div>`;
+      resultadoLbl.textContent = 'Perfil del jugador';
+      resultadoVal.textContent = 'No aplica';
+      scriptRechazo.classList.add('show');
+      document.getElementById('scriptRechazoTexto').textContent = SCRIPT_RECHAZO;
       return;
     }
 
-    const estadoTiempo = calcularEstadoTiempo();
-    const u = UMBRALES[paisActual];
+    // Paso 1: NGR total del jugador debe superar el umbral del país
+    const ngrTotal = parseFloat(document.getElementById('ngrTotal').value) || 0;
+    const ngrRequerido = TOTAL_NGR[paisActual];
+    if (ngrTotal < ngrRequerido) {
+      resultadoRow.classList.add('bad');
+      resultadoLbl.textContent = 'NGR total';
+      resultadoVal.textContent = 'Insuficiente';
+      notaNgrTotal.classList.add('show','bad');
+      notaNgrTotal.innerHTML = `<span class="ic">⛔</span><div>El NGR total del jugador (${fmt(ngrTotal,m)}) es menor al mínimo requerido de <strong>${fmt(ngrRequerido,m)}</strong> para ${paisActual}.</div>`;
+      return;
+    }
 
-    // Caso: no se ha indicado la fecha ni se marcó "nunca"
-    if (estadoTiempo.dias === null) {
+    // Paso 2: depósito en los últimos 3 días
+    if (document.getElementById('depositoReciente3d').value === 'no') {
+      resultadoRow.classList.add('bad');
+      resultadoLbl.textContent = 'Depósito reciente';
+      resultadoVal.textContent = 'Falta depósito';
+      notaDeposito3d.classList.add('show','bad');
+      notaDeposito3d.innerHTML = `<span class="ic">⛔</span><div>El jugador no tiene un depósito en los últimos 3 días. <strong>Solicítalo</strong> antes de otorgar la cortesía (debe consumir el 100% antes de recibir el beneficio).</div>`;
+      return;
+    }
+
+    // Paso 3: tiempo desde la última cortesía
+    const dias = diasDesdeUltima();
+
+    if (dias === null) {
       resultadoRow.classList.add('bad');
       resultadoLbl.textContent = 'Última cortesía';
       resultadoVal.textContent = 'Falta la fecha';
@@ -370,87 +387,79 @@
       return;
     }
 
-    // Caso: no cumple tiempo mínimo y no aplica (o no cumple) reclamo anticipado
-    if (!estadoTiempo.tiempoOK && !estadoTiempo.requiereAnticipado) {
+    let tiempoOK = false;
+    let requiereAnticipado = false;
+
+    if (dias === Infinity) {
+      tiempoOK = true;
+    } else if (dias >= TIEMPO_NORMAL) {
+      tiempoOK = true;
+    } else if (dias >= TIEMPO_ANTICIPADO) {
+      requiereAnticipado = true;
+    }
+
+    if (!tiempoOK && !requiereAnticipado) {
       resultadoRow.classList.add('bad');
       resultadoLbl.textContent = 'Tiempo entre cortesías';
       resultadoVal.textContent = 'No cumple aún';
       notaTiempo.classList.add('show','bad');
-      const extra = (estadoTiempo.nivel === 'medium' || estadoTiempo.nivel === 'high')
-        ? ` (o ${ANTICIPADO[estadoTiempo.nivel].dias} días con depósito de reclamo anticipado)`
-        : '';
-      notaTiempo.innerHTML = `<span class="ic">⛔</span><div>Han pasado <strong>${estadoTiempo.dias} días</strong> desde la última cortesía. Se requieren al menos <strong>${TIEMPO_NORMAL[estadoTiempo.nivel]} días</strong> para nivel ${estadoTiempo.nivel}${extra}.</div>`;
+      notaTiempo.innerHTML = `<span class="ic">⛔</span><div>Han pasado <strong>${dias} días</strong> desde la última cortesía. Se requieren al menos <strong>${TIEMPO_NORMAL} días</strong> (o ${TIEMPO_ANTICIPADO} días con reclamo anticipado).</div>`;
       return;
     }
 
-    // Caso: dentro de la ventana de reclamo anticipado -> requiere depósito mínimo
-    if (estadoTiempo.requiereAnticipado) {
-      const info = estadoTiempo.anticipadoInfo;
-      const monto = info.montos[paisActual];
+    if (requiereAnticipado) {
       const depositoAnticipado = parseFloat(document.getElementById('depositoAnticipado').value) || 0;
-
-      if (depositoAnticipado >= monto) {
+      const montoAnticipado = ANTICIPADO_GARANTIZADA[paisActual];
+      if (depositoAnticipado >= montoAnticipado) {
         notaAnticipado.classList.add('show','ok');
-        notaAnticipado.innerHTML = `<span class="ic">✅</span><div>Cumple reclamo anticipado: depósito de ${fmt(depositoAnticipado,u.moneda)} supera el mínimo de ${fmt(monto,u.moneda)} requerido a los ${info.dias} días.</div>`;
+        notaAnticipado.innerHTML = `<span class="ic">✅</span><div>Cumple reclamo anticipado: depósito de ${fmt(depositoAnticipado,m)} supera el mínimo de ${fmt(montoAnticipado,m)}. Recuerda que debe apostar el 100% para recibir el regalo.</div>`;
       } else {
         resultadoRow.classList.add('bad');
         resultadoLbl.textContent = 'Reclamo anticipado';
         resultadoVal.textContent = 'Falta depósito';
         notaAnticipado.classList.add('show','bad');
-        notaAnticipado.innerHTML = `<span class="ic">⛔</span><div>Para reclamo anticipado (desde los ${info.dias} días) se requiere un depósito ≥ ${fmt(monto,u.moneda)}. Depósito actual: ${fmt(depositoAnticipado,u.moneda)}.</div>`;
+        notaAnticipado.innerHTML = `<span class="ic">⛔</span><div>Para reclamo anticipado (desde los ${TIEMPO_ANTICIPADO} días) se requiere un nuevo depósito ≥ ${fmt(montoAnticipado,m)}. Depósito actual: ${fmt(depositoAnticipado,m)}.</div>`;
         return;
       }
     }
 
-    // Caso 1: cortesías 1 a 4 -> aprobación directa
+    // Paso 4: cortesía 1-4 (garantizada) -> aprobar
     if (!esAdicional()) {
       resultadoRow.classList.add('ok');
-      resultadoLbl.textContent = 'Cortesía estándar';
+      resultadoLbl.textContent = 'Cortesía garantizada';
       resultadoVal.textContent = 'Aprobada';
+      notaPremio.classList.add('show','ok');
+      notaPremio.innerHTML = `<span class="ic">🎁</span><div><strong>Otorgar:</strong> ${textoPremio()}</div>`;
       return;
     }
 
-    // Caso 2: cortesía adicional -> requiere condición de depósito + NGR
+    // Paso 5: cortesía adicional (5ta en adelante)
+    if (document.getElementById('ngrPositivoAdicional').value === 'no') {
+      resultadoRow.classList.add('bad');
+      resultadoLbl.textContent = 'Cortesía adicional';
+      resultadoVal.textContent = 'NGR no positivo';
+      return;
+    }
+
     const depositoUnico = parseFloat(document.getElementById('depositoUnico').value) || 0;
     const depositoAcumulado = parseFloat(document.getElementById('depositoAcumulado').value) || 0;
-    const ngrInput = document.getElementById('ngr').value;
-    const ngr = ngrInput === '' ? null : parseFloat(ngrInput);
+    const cumpleUnico = depositoUnico >= ADICIONAL_UNICO[paisActual];
+    const cumpleAcumulado = depositoAcumulado >= ADICIONAL_ACUM[paisActual];
 
-    const cumpleUnico = depositoUnico >= u.unico;
-    const cumpleAcumulado = depositoAcumulado >= u.acumulado;
-    const cumpleDeposito = cumpleUnico || cumpleAcumulado;
-
-    if (cumpleDeposito) {
+    if (cumpleUnico || cumpleAcumulado) {
       resultadoRow.classList.add('ok');
       resultadoLbl.textContent = 'Cortesía adicional';
-      resultadoVal.textContent = 'Cumple depósito';
-
-      notaDeposito.classList.add('show','ok');
-      notaDeposito.innerHTML = `<span class="ic">✅</span><div><strong>Condición de depósito cumplida:</strong> ${cumpleUnico ? `depósito único de ${fmt(depositoUnico,u.moneda)}` : `acumulado de ${fmt(depositoAcumulado,u.moneda)}`} supera el umbral requerido.</div>`;
-
-      notaNgr.classList.add('show');
-      if (ngr === null) {
-        notaNgr.classList.add('warn');
-        notaNgr.innerHTML = `<span class="ic">⚠️</span><div><strong>Importante:</strong> valida que el NGR del usuario en los últimos 30 días sea positivo para aprobar por rush. Aún no ingresaste el NGR.</div>`;
-      } else if (ngr > 0) {
-        notaNgr.classList.add('ok');
-        notaNgr.innerHTML = `<span class="ic">✅</span><div>NGR de los últimos 30 días: <strong>${fmt(ngr,u.moneda)}</strong> (positivo). Cumple el requisito para rush.</div>`;
-      } else {
-        notaNgr.classList.add('bad');
-        notaNgr.innerHTML = `<span class="ic">⛔</span><div>NGR de los últimos 30 días: <strong>${fmt(ngr,u.moneda)}</strong> (no positivo). No cumple el requisito para rush.</div>`;
-      }
+      resultadoVal.textContent = 'Aprobada';
+      notaPremio.classList.add('show','ok');
+      notaPremio.innerHTML = `<span class="ic">🎁</span><div><strong>Otorgar:</strong> ${textoPremio()}</div>`;
     } else {
       resultadoRow.classList.add('bad');
       resultadoLbl.textContent = 'Cortesía adicional';
-      resultadoVal.textContent = 'No cumple';
-
-      notaDeposito.classList.add('show','bad');
-      notaDeposito.innerHTML = `<span class="ic">⛔</span><div>Ninguna condición de depósito se cumple: único ${fmt(depositoUnico,u.moneda)} (req. ≥ ${fmt(u.unico,u.moneda)}) ni acumulado ${fmt(depositoAcumulado,u.moneda)} (req. ≥ ${fmt(u.acumulado,u.moneda)}).</div>`;
+      resultadoVal.textContent = 'No cumple depósito';
     }
   }
 
   switchPais('CO', document.querySelector('.tab-btn'));
-  onCambioNivel();
 </script>
 
 </body>
