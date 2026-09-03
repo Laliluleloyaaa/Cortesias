@@ -86,6 +86,24 @@
   .script-box.show{display:block}
   .script-box .tag{display:block;font-size:.7rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
 
+  .macro-box{margin-top:12px;border-radius:10px;padding:16px 18px;font-size:.82rem;line-height:1.6;background:rgba(255,181,71,.06);border:1px solid rgba(255,181,71,.35);color:var(--text);display:none;white-space:pre-line}
+  .macro-box.show{display:block}
+  .macro-box .tag{display:block;font-size:.7rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--warn);margin-bottom:4px}
+  .macro-box .macro-name{display:block;font-size:.72rem;font-weight:600;color:var(--muted);margin-bottom:10px}
+
+  .copy-btn{
+    display:inline-flex;align-items:center;gap:7px;
+    margin-top:14px;
+    background:#4f7df3;color:#fff;
+    border:none;border-radius:8px;
+    padding:9px 16px;
+    font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;
+    cursor:pointer;transition:opacity .15s, transform .1s;
+  }
+  .copy-btn:hover{opacity:.9}
+  .copy-btn:active{transform:scale(0.97)}
+  .copy-btn svg{width:15px;height:15px;flex-shrink:0}
+
   @media(max-width:600px){
     header{padding:20px}
     header h1{font-size:1.5rem}
@@ -184,6 +202,16 @@
         </div>
       </div>
       <div class="note-box" id="notaAnticipado"></div>
+      <div class="macro-box" id="macroAnticipado">
+        <span class="tag">📜 Macro obligatoria — enviar tal cual</span>
+        <span class="macro-name">MACRO APROBADA LEGAL - SOLICITAR DEPÓSITO EXTRA CORTESÍA ANTICIPADA</span>
+        <span id="macroAnticipadoTexto"></span>
+        <br>
+        <button class="copy-btn" onclick="copiarTexto('macroAnticipadoTexto', this)">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="8" y="8" width="12" height="12" rx="2" stroke="currentColor" stroke-width="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10" stroke="currentColor" stroke-width="2"/></svg>
+          Copiar
+        </button>
+      </div>
 
       <!-- Cortesías adicionales (5ta en adelante) -->
       <div class="extra-block" id="adicionalBlock">
@@ -204,6 +232,16 @@
           <div class="input-wrap"><span class="cur" id="curAcumulado">$</span><input type="number" id="depositoAcumulado" placeholder="0" oninput="validar()"></div>
         </div>
       </div>
+      <div class="macro-box" id="macroAdicional">
+        <span class="tag">📜 Macro obligatoria — enviar tal cual</span>
+        <span class="macro-name">MACRO APROBADA LEGAL - SOLICITAR DEPÓSITO EXTRA CORTESÍA ADICIONAL</span>
+        <span id="macroAdicionalTexto"></span>
+        <br>
+        <button class="copy-btn" onclick="copiarTexto('macroAdicionalTexto', this)">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="8" y="8" width="12" height="12" rx="2" stroke="currentColor" stroke-width="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10" stroke="currentColor" stroke-width="2"/></svg>
+          Copiar
+        </button>
+      </div>
 
     </div>
 
@@ -213,12 +251,27 @@
     </div>
 
     <div class="note-box" id="notaDeposito3d"></div>
+    <div class="macro-box" id="macroDeposito">
+      <span class="tag">📜 Macro obligatoria — enviar tal cual</span>
+      <span class="macro-name">MACRO APROBADA LEGAL - SOLICITAR DEPÓSITO EXTRA</span>
+      <span id="macroDepositoTexto"></span>
+      <br>
+      <button class="copy-btn" onclick="copiarTexto('macroDepositoTexto', this)">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="8" y="8" width="12" height="12" rx="2" stroke="currentColor" stroke-width="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10" stroke="currentColor" stroke-width="2"/></svg>
+        Copiar
+      </button>
+    </div>
     <div class="note-box" id="notaNgrTotal"></div>
     <div class="note-box" id="notaPremio"></div>
 
     <div class="script-box" id="scriptRechazo">
       <span class="tag">📋 Macro sugerida</span>
       <span id="scriptRechazoTexto"></span>
+      <br>
+      <button class="copy-btn" onclick="copiarTexto('scriptRechazoTexto', this)">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="8" y="8" width="12" height="12" rx="2" stroke="currentColor" stroke-width="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10" stroke="currentColor" stroke-width="2"/></svg>
+        Copiar
+      </button>
     </div>
   </div>
 </div>
@@ -236,6 +289,23 @@
   const MONTO_MIXTO = { CO: 20000, MX: 200, PE: 30 };
 
   const SCRIPT_RECHAZO = "Entiendo que desees aprovechar algún beneficio adicional 🙌 En este caso me gustaria comentarte que lamentablemente por este canal ya no otorgamos este tipo de beneficios, pero tienes varias formas de disfrutar más recompensas con nosotros:\n\n⭐ Participa en las dinámicas de nuestro chat de casino:\n- Lunes a Viernes de 9am a medianoche\n- Fines de semana de 12pm a medianoche\n⭐ Canjea tus puntos de lealtad en la tienda de bonos\n⭐ Mantente activo semana a semana y accede a los beneficios de tu programa de lealtad\n\nDéjame saber si tienes alguna solicitud adicional con la que pueda ayudarte 🙏";
+
+  function macroTexto(intro, monto, premio){
+    return `¡Buenas noticias! Puedes acceder a ${intro} 🎁 \nPara poder activarla, realiza un nuevo depósito de mínimo ${monto}, juega el 100% y reclama un ${premio}.\n\nRecuerda que avanzar con esta promo es completamente voluntario, tómate tu tiempo y decide solo si te sientes cómodo/a haciéndolo 💙\n\nEstaré atenta a tus indicaciones 🙏`;
+  }
+
+  function copiarTexto(elementId, btn){
+    const texto = document.getElementById(elementId).textContent;
+    navigator.clipboard.writeText(texto).then(() => {
+      const original = btn.innerHTML;
+      btn.innerHTML = '¡Copiado! ✓';
+      setTimeout(() => { btn.innerHTML = original; }, 1500);
+    }).catch(() => {
+      const original = btn.innerHTML;
+      btn.innerHTML = 'No se pudo copiar';
+      setTimeout(() => { btn.innerHTML = original; }, 1500);
+    });
+  }
 
   let paisActual = 'CO';
 
@@ -344,6 +414,9 @@
     notaAnticipado.className = 'note-box';
     scriptRechazo.className = 'script-box';
     notaPremio.className = 'note-box';
+    document.getElementById('macroDeposito').className = 'macro-box';
+    document.getElementById('macroAnticipado').className = 'macro-box';
+    document.getElementById('macroAdicional').className = 'macro-box';
 
     const m = MONEDA[paisActual];
 
@@ -376,6 +449,8 @@
       resultadoVal.textContent = 'Falta depósito';
       notaDeposito3d.classList.add('show','bad');
       notaDeposito3d.innerHTML = `<span class="ic">⛔</span><div>El jugador no tiene un depósito en los últimos 3 días. <strong>Solicítalo</strong> antes de otorgar la cortesía (debe consumir el 100% antes de recibir el beneficio).</div>`;
+      document.getElementById('macroDeposito').classList.add('show');
+      document.getElementById('macroDepositoTexto').textContent = macroTexto('una promo Rush', '$____', textoPremio());
       return;
     }
 
@@ -426,6 +501,8 @@
         if (!depositoHecho) faltantes.push('el nuevo depósito');
         if (!saldoConsumido) faltantes.push('consumir el 100% del saldo');
         notaAnticipado.innerHTML = `<span class="ic">⛔</span><div>Para reclamo anticipado (desde los ${TIEMPO_ANTICIPADO} días) todavía falta: <strong>${faltantes.join(' y ')}</strong>.</div>`;
+        document.getElementById('macroAnticipado').classList.add('show');
+        document.getElementById('macroAnticipadoTexto').textContent = macroTexto('una promo de forma anticipada', fmt(ANTICIPADO_GARANTIZADA[paisActual], m), textoPremio());
         return;
       }
     }
@@ -463,6 +540,8 @@
       resultadoRow.classList.add('bad');
       resultadoLbl.textContent = 'Cortesía adicional';
       resultadoVal.textContent = 'No cumple depósito';
+      document.getElementById('macroAdicional').classList.add('show');
+      document.getElementById('macroAdicionalTexto').textContent = macroTexto('una promo Rush adicional', fmt(ADICIONAL_UNICO[paisActual], m), textoPremio());
     }
   }
 
