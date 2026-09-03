@@ -82,27 +82,29 @@
   .note-box.bad{background:rgba(255,60,90,.1);border:1px solid rgba(255,60,90,.35);color:#d8dce8}
   .note-box.bad strong{color:var(--bad)}
 
-  .script-box{margin-top:12px;border-radius:10px;padding:16px 18px;font-size:.82rem;line-height:1.6;background:var(--surface2);border:1px solid var(--border);color:var(--text);display:none;white-space:pre-line}
+  .script-box{position:relative;margin-top:12px;border-radius:10px;padding:16px 18px;font-size:.82rem;line-height:1.6;background:var(--surface2);border:1px solid var(--border);color:var(--text);display:none;white-space:pre-line}
   .script-box.show{display:block}
   .script-box .tag{display:block;font-size:.7rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
 
-  .macro-box{margin-top:12px;border-radius:10px;padding:16px 18px;font-size:.82rem;line-height:1.6;background:rgba(255,181,71,.06);border:1px solid rgba(255,181,71,.35);color:var(--text);display:none;white-space:pre-line}
+  .macro-box{position:relative;margin-top:12px;border-radius:10px;padding:16px 18px;font-size:.82rem;line-height:1.6;background:var(--surface2);border:1px solid var(--border);color:var(--text);display:none;white-space:pre-line}
   .macro-box.show{display:block}
   .macro-box .tag{display:block;font-size:.7rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--warn);margin-bottom:4px}
   .macro-box .macro-name{display:block;font-size:.72rem;font-weight:600;color:var(--muted);margin-bottom:10px}
 
   .copy-btn{
-    display:inline-flex;align-items:center;gap:7px;
-    margin-top:14px;
+    position:absolute;top:14px;right:14px;
+    width:auto;
+    display:inline-flex;align-items:center;gap:5px;
     background:#4f7df3;color:#fff;
-    border:none;border-radius:8px;
-    padding:9px 16px;
-    font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;
+    border:none;border-radius:7px;
+    padding:6px 11px;
+    font-family:'DM Sans',sans-serif;font-size:.72rem;font-weight:600;
     cursor:pointer;transition:opacity .15s, transform .1s;
+    margin:0;
   }
   .copy-btn:hover{opacity:.9}
   .copy-btn:active{transform:scale(0.97)}
-  .copy-btn svg{width:15px;height:15px;flex-shrink:0}
+  .copy-btn svg{width:13px;height:13px;flex-shrink:0}
 
   @media(max-width:600px){
     header{padding:20px}
@@ -206,7 +208,6 @@
         <span class="tag">📜 Macro obligatoria — enviar tal cual</span>
         <span class="macro-name">MACRO APROBADA LEGAL - SOLICITAR DEPÓSITO EXTRA CORTESÍA ANTICIPADA</span>
         <span id="macroAnticipadoTexto"></span>
-        <br>
         <button class="copy-btn" onclick="copiarTexto('macroAnticipadoTexto', this)">
           <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="8" y="8" width="12" height="12" rx="2" stroke="currentColor" stroke-width="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10" stroke="currentColor" stroke-width="2"/></svg>
           Copiar
@@ -236,11 +237,20 @@
         <span class="tag">📜 Macro obligatoria — enviar tal cual</span>
         <span class="macro-name">MACRO APROBADA LEGAL - SOLICITAR DEPÓSITO EXTRA CORTESÍA ADICIONAL</span>
         <span id="macroAdicionalTexto"></span>
-        <br>
         <button class="copy-btn" onclick="copiarTexto('macroAdicionalTexto', this)">
           <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="8" y="8" width="12" height="12" rx="2" stroke="currentColor" stroke-width="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10" stroke="currentColor" stroke-width="2"/></svg>
           Copiar
         </button>
+      </div>
+      <div class="extra-block" id="checksAdicionalBlock">
+        <div class="check-row">
+          <input type="checkbox" id="depositoAdicionalHecho" onchange="validar()">
+          <span>Nuevo depósito realizado</span>
+        </div>
+        <div class="check-row">
+          <input type="checkbox" id="saldoAdicionalConsumido" onchange="validar()">
+          <span>Saldo consumido (apostó el 100%)</span>
+        </div>
       </div>
 
     </div>
@@ -255,7 +265,6 @@
       <span class="tag">📜 Macro obligatoria — enviar tal cual</span>
       <span class="macro-name">MACRO APROBADA LEGAL - SOLICITAR DEPÓSITO EXTRA</span>
       <span id="macroDepositoTexto"></span>
-      <br>
       <button class="copy-btn" onclick="copiarTexto('macroDepositoTexto', this)">
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="8" y="8" width="12" height="12" rx="2" stroke="currentColor" stroke-width="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10" stroke="currentColor" stroke-width="2"/></svg>
         Copiar
@@ -267,7 +276,6 @@
     <div class="script-box" id="scriptRechazo">
       <span class="tag">📋 Macro sugerida</span>
       <span id="scriptRechazoTexto"></span>
-      <br>
       <button class="copy-btn" onclick="copiarTexto('scriptRechazoTexto', this)">
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="8" y="8" width="12" height="12" rx="2" stroke="currentColor" stroke-width="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10" stroke="currentColor" stroke-width="2"/></svg>
         Copiar
@@ -417,6 +425,7 @@
     document.getElementById('macroDeposito').className = 'macro-box';
     document.getElementById('macroAnticipado').className = 'macro-box';
     document.getElementById('macroAdicional').className = 'macro-box';
+    document.getElementById('checksAdicionalBlock').classList.remove('show');
 
     const m = MONEDA[paisActual];
 
@@ -454,61 +463,61 @@
       return;
     }
 
-    // Paso 3: tiempo desde la última cortesía
-    const dias = diasDesdeUltima();
+    // Paso 3: tiempo desde la última cortesía (solo aplica a cortesías garantizadas 1-4)
+    if (!esAdicional()) {
+      const dias = diasDesdeUltima();
 
-    if (dias === null) {
-      resultadoRow.classList.add('bad');
-      resultadoLbl.textContent = 'Última cortesía';
-      resultadoVal.textContent = 'Falta la fecha';
-      notaTiempo.classList.add('show','warn');
-      notaTiempo.innerHTML = `<span class="ic">⚠️</span><div>Indica la fecha de la última cortesía, o marca "Nunca ha recibido cortesía".</div>`;
-      return;
-    }
-
-    let tiempoOK = false;
-    let requiereAnticipado = false;
-
-    if (dias === Infinity) {
-      tiempoOK = true;
-    } else if (dias >= TIEMPO_NORMAL) {
-      tiempoOK = true;
-    } else if (!esAdicional() && dias >= TIEMPO_ANTICIPADO) {
-      requiereAnticipado = true;
-    }
-
-    if (!tiempoOK && !requiereAnticipado) {
-      resultadoRow.classList.add('bad');
-      resultadoLbl.textContent = 'Tiempo entre cortesías';
-      resultadoVal.textContent = 'No cumple aún';
-      notaTiempo.classList.add('show','bad');
-      notaTiempo.innerHTML = `<span class="ic">⛔</span><div>Han pasado <strong>${dias} días</strong> desde la última cortesía. Se requieren al menos <strong>${TIEMPO_NORMAL} días</strong> (o ${TIEMPO_ANTICIPADO} días con reclamo anticipado).</div>`;
-      return;
-    }
-
-    if (requiereAnticipado) {
-      const depositoHecho = document.getElementById('depositoAnticipadoHecho').checked;
-      const saldoConsumido = document.getElementById('saldoConsumido').checked;
-      if (depositoHecho && saldoConsumido) {
-        notaAnticipado.classList.add('show','ok');
-        notaAnticipado.innerHTML = `<span class="ic">✅</span><div>Cumple reclamo anticipado: nuevo depósito realizado y saldo consumido al 100%.</div>`;
-      } else {
+      if (dias === null) {
         resultadoRow.classList.add('bad');
-        resultadoLbl.textContent = 'Reclamo anticipado';
-        resultadoVal.textContent = 'Falta requisito';
-        notaAnticipado.classList.add('show','bad');
-        const faltantes = [];
-        if (!depositoHecho) faltantes.push('el nuevo depósito');
-        if (!saldoConsumido) faltantes.push('consumir el 100% del saldo');
-        notaAnticipado.innerHTML = `<span class="ic">⛔</span><div>Para reclamo anticipado (desde los ${TIEMPO_ANTICIPADO} días) todavía falta: <strong>${faltantes.join(' y ')}</strong>.</div>`;
-        document.getElementById('macroAnticipado').classList.add('show');
-        document.getElementById('macroAnticipadoTexto').textContent = macroTexto('una promo de forma anticipada', fmt(ANTICIPADO_GARANTIZADA[paisActual], m), textoPremio());
+        resultadoLbl.textContent = 'Última cortesía';
+        resultadoVal.textContent = 'Falta la fecha';
+        notaTiempo.classList.add('show','warn');
+        notaTiempo.innerHTML = `<span class="ic">⚠️</span><div>Indica la fecha de la última cortesía, o marca "Nunca ha recibido cortesía".</div>`;
         return;
       }
-    }
 
-    // Paso 4: cortesía 1-4 (garantizada) -> aprobar
-    if (!esAdicional()) {
+      let tiempoOK = false;
+      let requiereAnticipado = false;
+
+      if (dias === Infinity) {
+        tiempoOK = true;
+      } else if (dias >= TIEMPO_NORMAL) {
+        tiempoOK = true;
+      } else if (dias >= TIEMPO_ANTICIPADO) {
+        requiereAnticipado = true;
+      }
+
+      if (!tiempoOK && !requiereAnticipado) {
+        resultadoRow.classList.add('bad');
+        resultadoLbl.textContent = 'Tiempo entre cortesías';
+        resultadoVal.textContent = 'No cumple aún';
+        notaTiempo.classList.add('show','bad');
+        notaTiempo.innerHTML = `<span class="ic">⛔</span><div>Han pasado <strong>${dias} días</strong> desde la última cortesía. Se requieren al menos <strong>${TIEMPO_NORMAL} días</strong> (o ${TIEMPO_ANTICIPADO} días con reclamo anticipado).</div>`;
+        return;
+      }
+
+      if (requiereAnticipado) {
+        const depositoHecho = document.getElementById('depositoAnticipadoHecho').checked;
+        const saldoConsumido = document.getElementById('saldoConsumido').checked;
+        if (depositoHecho && saldoConsumido) {
+          notaAnticipado.classList.add('show','ok');
+          notaAnticipado.innerHTML = `<span class="ic">✅</span><div>Cumple reclamo anticipado: nuevo depósito realizado y saldo consumido al 100%.</div>`;
+        } else {
+          resultadoRow.classList.add('bad');
+          resultadoLbl.textContent = 'Reclamo anticipado';
+          resultadoVal.textContent = 'Falta requisito';
+          notaAnticipado.classList.add('show','bad');
+          const faltantes = [];
+          if (!depositoHecho) faltantes.push('el nuevo depósito');
+          if (!saldoConsumido) faltantes.push('consumir el 100% del saldo');
+          notaAnticipado.innerHTML = `<span class="ic">⛔</span><div>Para reclamo anticipado (desde los ${TIEMPO_ANTICIPADO} días) todavía falta: <strong>${faltantes.join(' y ')}</strong>.</div>`;
+          document.getElementById('macroAnticipado').classList.add('show');
+          document.getElementById('macroAnticipadoTexto').textContent = macroTexto('una promo de forma anticipada', fmt(ANTICIPADO_GARANTIZADA[paisActual], m), textoPremio());
+          return;
+        }
+      }
+
+      // Paso 4: cortesía 1-4 (garantizada) -> aprobar
       resultadoRow.classList.add('ok');
       resultadoLbl.textContent = 'Cortesía garantizada';
       resultadoVal.textContent = 'Aprobada';
@@ -517,7 +526,7 @@
       return;
     }
 
-    // Paso 5: cortesía adicional (5ta en adelante)
+    // Paso 5: cortesía adicional (5ta en adelante) -> no depende del tiempo, solo de NGR positivo y depósito
     if (document.getElementById('ngrPositivoAdicional').value === 'no') {
       resultadoRow.classList.add('bad');
       resultadoLbl.textContent = 'Cortesía adicional';
@@ -530,7 +539,22 @@
     const cumpleUnico = depositoUnico >= ADICIONAL_UNICO[paisActual];
     const cumpleAcumulado = depositoAcumulado >= ADICIONAL_ACUM[paisActual];
 
-    if (cumpleUnico || cumpleAcumulado) {
+    if (!cumpleUnico && !cumpleAcumulado) {
+      resultadoRow.classList.add('bad');
+      resultadoLbl.textContent = 'Cortesía adicional';
+      resultadoVal.textContent = 'No cumple depósito';
+      return;
+    }
+
+    // Cumple la condición histórica de depósito -> igual se debe pedir SIEMPRE un depósito nuevo y confirmar que lo consumió
+    document.getElementById('macroAdicional').classList.add('show');
+    document.getElementById('macroAdicionalTexto').textContent = macroTexto('una promo Rush adicional', fmt(ADICIONAL_UNICO[paisActual], m), textoPremio());
+    document.getElementById('checksAdicionalBlock').classList.add('show');
+
+    const depositoAdicionalHecho = document.getElementById('depositoAdicionalHecho').checked;
+    const saldoAdicionalConsumido = document.getElementById('saldoAdicionalConsumido').checked;
+
+    if (depositoAdicionalHecho && saldoAdicionalConsumido) {
       resultadoRow.classList.add('ok');
       resultadoLbl.textContent = 'Cortesía adicional';
       resultadoVal.textContent = 'Aprobada';
@@ -539,9 +563,7 @@
     } else {
       resultadoRow.classList.add('bad');
       resultadoLbl.textContent = 'Cortesía adicional';
-      resultadoVal.textContent = 'No cumple depósito';
-      document.getElementById('macroAdicional').classList.add('show');
-      document.getElementById('macroAdicionalTexto').textContent = macroTexto('una promo Rush adicional', fmt(ADICIONAL_UNICO[paisActual], m), textoPremio());
+      resultadoVal.textContent = 'Pendiente depósito';
     }
   }
 
